@@ -523,17 +523,11 @@ export function composeEventHandlers<
  * @see https://remix.run/api/remix#meta-links-scripts
  */
 export function Links() {
-  let { matches, routeModules, manifest, appState } = useRemixEntryContext();
+  let { matches, routeModules, manifest } = useRemixEntryContext();
 
   let links = React.useMemo(
-    () =>
-      getLinksForMatches(
-        matches,
-        routeModules,
-        manifest,
-        appState.error ? deserializeError(appState.error) : undefined
-      ),
-    [matches, routeModules, manifest, appState.error]
+    () => getLinksForMatches(matches, routeModules, manifest),
+    [matches, routeModules, manifest]
   );
 
   return (
@@ -688,7 +682,7 @@ function PrefetchPageLinksImpl({
  * @see https://remix.run/api/remix#meta-links-scripts
  */
 export function Meta() {
-  let { matches, routeData, routeModules, appState } = useRemixEntryContext();
+  let { matches, routeData, routeModules } = useRemixEntryContext();
   let location = useLocation();
 
   let meta: HtmlMetaDescriptor = {};
@@ -709,9 +703,6 @@ export function Meta() {
               parentsData,
               params,
               location,
-              error: appState.error
-                ? deserializeError(appState.error)
-                : undefined,
             })
           : routeModule.meta;
       Object.assign(meta, routeMeta);

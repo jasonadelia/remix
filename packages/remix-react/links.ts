@@ -227,13 +227,12 @@ export type LinkDescriptor = HtmlLinkDescriptor | PrefetchPageDescriptor;
 export function getLinksForMatches(
   matches: RouteMatch<ClientRoute>[],
   routeModules: RouteModules,
-  manifest: AssetsManifest,
-  error: Error | undefined
+  manifest: AssetsManifest
 ): LinkDescriptor[] {
   let descriptors = matches
     .map((match): LinkDescriptor[] => {
       let module = routeModules[match.route.id];
-      return module.links?.({ error }) || [];
+      return module.links?.() || [];
     })
     .flat(1);
 
@@ -245,7 +244,7 @@ export async function prefetchStyleLinks(
   routeModule: RouteModule
 ): Promise<void> {
   if (!routeModule.links) return;
-  let descriptors = routeModule.links({});
+  let descriptors = routeModule.links();
   if (!descriptors) return;
 
   let styleLinks: HtmlLinkDescriptor[] = [];
@@ -331,7 +330,7 @@ export async function getStylesheetPrefetchLinks(
   let links = await Promise.all(
     matches.map(async (match) => {
       let mod = await loadRouteModule(match.route, routeModules);
-      return mod.links ? mod.links({}) : [];
+      return mod.links ? mod.links() : [];
     })
   );
 
