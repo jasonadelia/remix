@@ -179,8 +179,7 @@ test.describe("ErrorBoundary", () => {
         `,
 
         [`app/routes${LINKS_ERROR}.jsx`]: js`
-          export function links({ error }) {
-            if (error) return {}
+          export function links() {
             throw new Error("Kaboom!")
           }
 
@@ -190,8 +189,7 @@ test.describe("ErrorBoundary", () => {
         `,
 
         [`app/routes${META_ERROR}.jsx`]: js`
-          export function meta({ error }) {
-            if (error) return {}
+          export function meta() {
             throw new Error("Kaboom!")
           }
 
@@ -536,8 +534,7 @@ test.describe("ErrorBoundary", () => {
           `,
 
           [`app/routes${LINKS_ERROR}.jsx`]: js`
-            export function links({ error }) {
-              if (error) return {}
+            export function links() {
               throw new Error("Kaboom!")
             }
 
@@ -547,8 +544,7 @@ test.describe("ErrorBoundary", () => {
           `,
 
           [`app/routes${META_ERROR}.jsx`]: js`
-            export function meta({ error }) {
-              if (error) return {}
+            export function meta() {
               throw new Error("Kaboom!")
             }
 
