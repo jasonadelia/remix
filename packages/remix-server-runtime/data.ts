@@ -1,6 +1,10 @@
+import type { Location } from "history";
+
 import type { RouteMatch } from "./routeMatching";
 import type { ServerRoute } from "./routes";
 import { json, isResponse, isRedirectResponse } from "./responses";
+import type { HtmlMetaDescriptor } from "./routeModules";
+import type { RouteData } from "./routeData";
 
 /**
  * An object of arbitrary for route loaders and actions provided by the
@@ -12,6 +16,58 @@ export type AppLoadContext = any;
  * Data for a route that was returned from a `loader()`.
  */
 export type AppData = any;
+
+function createStaticLocation(url: URL): Location {
+  return {
+    pathname: url.pathname,
+    search: url.search,
+    hash: "",
+    state: null,
+    key: "default",
+  };
+}
+
+export async function callRouteMeta({
+  request,
+  matches,
+  routeData,
+}: {
+  request: Request;
+  matches: RouteMatch<ServerRoute>[];
+  routeData: { [routeId: string]: RouteData };
+}): Promise<HtmlMetaDescriptor> {
+  let result: HtmlMetaDescriptor = {};
+  let parentsData: { [routeId: string]: AppData } = {};
+
+  let location = createStaticLocation(new URL(request.url));
+
+  for (let match of matches) {
+    let routeId = match.route.id;
+    let data = routeData[routeId];
+    let params = match.params;
+
+    let meta = match.route.module.meta;
+
+    if (meta) {
+      let routeMeta: HtmlMetaDescriptor | undefined;
+      routeMeta =
+        typeof meta === "function"
+          ? meta({
+              data,
+              parentsData,
+              params,
+              location,
+            })
+          : meta;
+
+      Object.assign(result, routeMeta);
+    }
+
+    parentsData[routeId] = data;
+  }
+
+  return result;
+}
 
 export async function callRouteAction({
   loadContext,

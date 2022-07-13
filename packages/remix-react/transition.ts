@@ -77,13 +77,22 @@ export interface TransitionManagerState {
   errorBoundaryId: null | string;
 
   /**
-   * The id of the nested ErrorBoundary in which to render the error.
+   * The id of the nested CatchBoundary in which to render the caught Response.
    *
    * - undefined: no error
    * - null: error, but no routes have a boundary, use a default
    * - string: actual id
    */
   catchBoundaryId: null | string;
+
+  /**
+   * The id of the nested ErrorBoundary in which to render the error.
+   *
+   * - undefined: no error
+   * - null: error, but no routes have a boundary, use a default
+   * - string: actual id
+   */
+  metaBoundaryRouteId: null | string;
 
   fetchers: Map<string, Fetcher>;
 }
@@ -97,6 +106,7 @@ export interface TransitionManagerInit {
   error?: Error;
   catchBoundaryId?: null | string;
   errorBoundaryId?: null | string;
+  metaBoundaryRouteId?: null | string;
   onChange: (state: TransitionManagerState) => void;
   onRedirect: (to: string, state?: any) => void;
 }
@@ -445,6 +455,7 @@ export function createTransitionManager(init: TransitionManagerInit) {
     error: init.error,
     catchBoundaryId: init.catchBoundaryId || null,
     errorBoundaryId: init.errorBoundaryId || null,
+    metaBoundaryRouteId: init.metaBoundaryRouteId || null,
     matches,
     nextMatches: undefined,
     transition: IDLE_TRANSITION,

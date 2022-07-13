@@ -122,6 +122,7 @@ export function RemixEntry({
           error: state.error,
           catchBoundaryRouteId: state.catchBoundaryId,
           loaderBoundaryRouteId: state.errorBoundaryId,
+          metaBoundaryRouteId: state.metaBoundaryRouteId,
           renderBoundaryRouteId: null,
           trackBoundaries: false,
           trackCatchBoundaries: false,
@@ -161,10 +162,15 @@ export function RemixEntry({
   // `componentDidCatch`
   let ssrErrorBeforeRoutesRendered =
     clientState.error &&
+    clientState.metaBoundaryRouteId === null &&
     clientState.renderBoundaryRouteId === null &&
     clientState.loaderBoundaryRouteId === null
       ? deserializeError(clientState.error)
       : undefined;
+
+  if (clientState.error && clientState.metaBoundaryRouteId !== null) {
+    ssrErrorBeforeRoutesRendered = deserializeError(clientState.error);
+  }
 
   let ssrCatchBeforeRoutesRendered =
     clientState.catch && clientState.catchBoundaryRouteId === null

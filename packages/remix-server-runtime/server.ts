@@ -1,5 +1,10 @@
 import type { AppLoadContext } from "./data";
-import { callRouteAction, callRouteLoader, extractData } from "./data";
+import {
+  callRouteAction,
+  callRouteLoader,
+  callRouteMeta,
+  extractData,
+} from "./data";
 import type { AppState } from "./errors";
 import type { HandleDataRequestFunction, ServerBuild } from "./build";
 import type { EntryContext } from "./entry";
@@ -13,6 +18,7 @@ import type { ServerRoute } from "./routes";
 import { createRoutes } from "./routes";
 import { json, isRedirectResponse, isCatchResponse } from "./responses";
 import { createServerHandoffString } from "./serverHandoff";
+import type { HtmlMetaDescriptor } from "./routeModules";
 
 export type RequestHandler = (
   request: Request,
@@ -194,6 +200,7 @@ async function handleDocumentRequest({
     catchBoundaryRouteId: null,
     renderBoundaryRouteId: null,
     loaderBoundaryRouteId: null,
+    metaBoundaryRouteId: null,
     error: undefined,
     catch: undefined,
   };
@@ -469,6 +476,32 @@ async function handleDocumentRequest({
     );
   } catch (error: any) {
     responseStatusCode = 500;
+
+    // next up, we'll verify that `meta` returned without error
+    try {
+      await callRouteMeta({
+        request,
+        routeData: entryContext.routeData,
+        matches: matchesToLoad,
+      });
+    } catch (metaError) {
+      appState.trackBoundaries = false;
+      appState.metaBoundaryRouteId = getDeepestRouteIdWithBoundary(
+        matchesToLoad,
+        "ErrorBoundary"
+      );
+      if (metaError instanceof Error) {
+        appState.error = await serializeError(metaError);
+      } else {
+        console.error(metaError);
+        appState.error = await serializeError(
+          new Error(`Something went wrong`)
+        );
+      }
+
+      entryContext.serverHandoffString =
+        createServerHandoffString(serverHandoff);
+    }
 
     // Go again, this time with the componentDidCatch emulation. As it rendered
     // last time we mutated `componentDidCatch.routeId` for the last rendered
